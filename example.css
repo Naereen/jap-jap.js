@@ -60,11 +60,8 @@ a:visited {color:blue;}
 }
 
 #japjap-button {
-	position: absolute;
 	display: block;
-	left: 50%;
-	transform: translateX(-50%);
-	bottom: 10px;
+	margin: 15px auto;
 	background-color: #ff6b6b;
 	color: white;
 	font-weight: bold;
