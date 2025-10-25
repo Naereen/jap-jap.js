@@ -2,7 +2,7 @@
 var cards = (function() {
 	//The global options
 	var opt = {
-		cardSize : {width:69,height:94, padding:18},
+		cardSize : {width:69, height:94, padding:45},
 		animationSpeed : 500,
 		table : 'body',
 		cardback : 'red',
