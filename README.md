@@ -118,13 +118,13 @@ This project was developed with assistance from GitHub Copilot.
 
 Copyright (c) 2024 Lilian Besson (Naereen)
 
-This game implementation is free and open source software. You are free to use, modify, and distribute it.
+This game implementation is free and open source software distributed under the MIT License. You are free to use, modify, and distribute it.
 
 ### Third-Party Licenses
 
 This project incorporates the following third-party components:
 
-- **cards.js**: Licensed under the MIT License by Einar Egilsson - see [LICENSE](LICENSE) file
+- **cards.js**: Licensed under the MIT License by Einar Egilsson (2012-2019) - see [LICENSE](LICENSE) file
 - **Card Images**: Public domain by Nicu Buculei
 - **jQuery**: Licensed under the MIT License
 
