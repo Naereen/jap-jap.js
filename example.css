@@ -58,6 +58,57 @@ a:visited {color:blue;}
 	top:170px;
 }
 
+#japjap-button {
+	position: absolute;
+	left:210px;
+	top:170px;
+	background-color: #ff6b6b;
+	color: white;
+	font-weight: bold;
+	border: 2px solid #c92a2a;
+}
+
+#japjap-button:hover {
+	background-color: #fa5252;
+}
+
+#game-info {
+	margin: 10px 0;
+	padding: 10px;
+	background-color: #f0f0f0;
+	border-radius: 5px;
+}
+
+#scores {
+	font-size: 18px;
+	margin-bottom: 5px;
+}
+
+#status-message {
+	font-size: 16px;
+	color: #2c5f2d;
+	font-weight: bold;
+	margin-top: 5px;
+}
+
+#instructions {
+	margin: 15px 0;
+	padding: 10px;
+	background-color: #e7f5ff;
+	border-radius: 5px;
+	border: 1px solid #339af0;
+}
+
+#instructions ul {
+	margin: 5px 0;
+	padding-left: 20px;
+}
+
+#instructions li {
+	margin: 3px 0;
+	font-size: 14px;
+}
+
 footer {
 	font-size : 12px;
 	color:grey;

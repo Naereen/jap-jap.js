@@ -9,11 +9,32 @@
 	<body>
 		<h1>Jap Jap !</h1>
 
+		<div id="game-info">
+			<div id="scores">
+				<strong>Scores:</strong> 
+				You: <span id="player-score">0</span> | 
+				Opponent: <span id="opponent-score">0</span>
+			</div>
+			<div id="status-message">Click DEAL to start the game!</div>
+		</div>
+
 		<img class="preload" src="img/cards.png"/>
 
 		<div id="card-table">
 			<button id="deal">DEAL</button>
+			<button id="japjap-button">JAP JAP!</button>
 		</div>
+		
+		<div id="instructions">
+			<strong>How to play:</strong>
+			<ul>
+				<li>Select one or more cards from your hand (they must be same rank or consecutive sequence of same suit)</li>
+				<li>Click the deck to draw a hidden card, or click the discard pile to pick the top visible card</li>
+				<li>Call "JAP JAP!" when your hand value is 5 or less to win the round</li>
+				<li>First to 90 points loses the game!</li>
+			</ul>
+		</div>
+		
 		<footer>
             This game is still a work in progress, written by <a href="https://perso.crans.org/besson/">Lilian Besson</a> (<a href="https://github.com/Naereen/">Naereen</a>).
             <br>
