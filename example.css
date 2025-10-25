@@ -39,6 +39,7 @@ h1 {
 }
 
 #card-table {
+	position: relative;
 	background-color:green;
 	height:400px;
 	width:600px;
@@ -59,9 +60,11 @@ a:visited {color:blue;}
 }
 
 #japjap-button {
-	position: relative;
+	position: absolute;
 	display: block;
-	margin: 10px auto;
+	left: 50%;
+	transform: translateX(-50%);
+	bottom: 10px;
 	background-color: #ff6b6b;
 	color: white;
 	font-weight: bold;

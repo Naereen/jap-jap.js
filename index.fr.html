@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="fr">
+	<head>
+		<title>Jap Jap !</title>
+		<meta charset="UTF-8">
+		<link rel="stylesheet" href="example.css"/>
+		<script src="jquery-1.7.min.js"></script>
+	</head>
+	<body>
+		<h1>Jap Jap !</h1>
+
+		<div id="language-switch" style="text-align: right; margin-bottom: 10px;">
+			<a href="index.html">English</a> | <a href="index.fr.html">Français</a>
+		</div>
+
+		<div id="game-info">
+			<div id="scores">
+				<strong>Scores :</strong> 
+				Vous : <span id="player-score">0</span> | 
+				Adversaire : <span id="opponent-score">0</span>
+			</div>
+			<div id="status-message">Cliquez sur DISTRIBUER pour commencer le jeu !</div>
+		</div>
+
+		<img class="preload" src="img/cards.png"/>
+
+		<div id="card-table">
+			<button id="deal">DISTRIBUER</button>
+			<button id="japjap-button">JAP JAP!</button>
+		</div>
+		
+		<div id="instructions">
+			<strong>Comment jouer :</strong>
+			<ul>
+				<li>Sélectionnez une ou plusieurs cartes de votre main (elles doivent être de même rang ou former une séquence consécutive de même couleur)</li>
+				<li>Cliquez sur le paquet pour piocher une carte cachée, ou cliquez sur la défausse pour prendre la carte visible du dessus</li>
+				<li>Criez "JAP JAP !" lorsque la valeur de votre main est de 5 ou moins pour gagner la manche</li>
+				<li>Le premier à atteindre 90 points perd la partie !</li>
+			</ul>
+		</div>
+		
+		<footer>
+            Ce jeu est encore en cours de développement, écrit par <a href="https://perso.crans.org/besson/">Lilian Besson</a> (<a href="https://github.com/Naereen/">Naereen</a>).
+            <br>
+			cards.js a été créé par <a href="http://einaregilsson.com">Einar Egilsson</a> et est sous licence MIT. Les images de cartes ont été créées par <a href="http://nicubunu.ro">Nicu Buculei</a> et sont dans le domaine public.
+            <br>
+            <a href="https://github.com/Naereen/jap-jap.js/">Voir ce projet sur GitHub</a>
+            <br>
+            <em>Ce projet a été développé avec l'assistance de GitHub Copilot.</em>
+		</footer>
+		<!-- load this at the bottom so the #card-table element exists -->
+		<script src="cards.js"></script>
+		<script src="japjap.js"></script>
+	</body>
+</html>
