@@ -108,18 +108,34 @@ async function playOpponentTurn() {
     // If only one card, check for a sequence
     if (cardsToPlay.length === 1) {
         var sequences = [];
+        // Group cards by suit
+        var cardsBySuit = {};
         for (var i = 0; i < sortedHand.length; i++) {
-            var sequence = [sortedHand[i]];
-            for (var j = i + 1; j < sortedHand.length; j++) {
-                if (sortedHand[j].suit === sequence[0].suit && 
-                    sortedHand[j].rank === sequence[sequence.length - 1].rank + 1) {
-                    sequence.push(sortedHand[j]);
+            var suit = sortedHand[i].suit;
+            if (!cardsBySuit[suit]) {
+                cardsBySuit[suit] = [];
+            }
+            cardsBySuit[suit].push(sortedHand[i]);
+        }
+        
+        // Find sequences within each suit
+        for (var suit in cardsBySuit) {
+            var suitCards = cardsBySuit[suit].sort((a, b) => a.rank - b.rank);
+            for (var i = 0; i < suitCards.length; i++) {
+                var sequence = [suitCards[i]];
+                for (var j = i + 1; j < suitCards.length; j++) {
+                    if (suitCards[j].rank === sequence[sequence.length - 1].rank + 1) {
+                        sequence.push(suitCards[j]);
+                    } else {
+                        break;
+                    }
+                }
+                if (sequence.length > 1) {
+                    sequences.push(sequence);
                 }
             }
-            if (sequence.length > 1) {
-                sequences.push(sequence);
-            }
         }
+        
         // Use the longest sequence found
         if (sequences.length > 0) {
             cardsToPlay = sequences.sort((a, b) => b.length - a.length)[0];
@@ -200,20 +216,19 @@ async function startNewRound() {
         upperHand.pop();
     }
     
-    // Clear discard pile except keep one card
-    while (discardPile.length > 1) {
-        discardPile.pop();
-    }
-    
-    // If deck is empty, reshuffle discard pile
+    // If deck is empty, reshuffle discard pile (keeping top card)
     if (deck.length < 11) {
         var cardsToReshuffle = [];
-        while (discardPile.length > 0) {
-            cardsToReshuffle.push(discardPile.pop());
+        // Keep the top card in discard pile, reshuffle the rest
+        while (discardPile.length > 1) {
+            cardsToReshuffle.push(discardPile[discardPile.length - 2]);
+            discardPile.splice(discardPile.length - 2, 1);
         }
-        cards.shuffle(cardsToReshuffle);
-        deck.addCards(cardsToReshuffle);
-        deck.render({ immediate: true });
+        if (cardsToReshuffle.length > 0) {
+            cards.shuffle(cardsToReshuffle);
+            deck.addCards(cardsToReshuffle);
+            deck.render({ immediate: true });
+        }
     }
     
     gameState.selectedCards = [];
@@ -331,7 +346,7 @@ deck.click(function (card) {
     }
 });
 
-// When you click on the discard pile, pick a card from the last discarded cards
+// When you click on the discard pile, pick a card from the discard pile
 discardPile.click(function (card) {
     if (!yourTurn || !gameState.roundInProgress) return;
     
@@ -342,9 +357,8 @@ discardPile.click(function (card) {
             return;
         }
         
-        // Check if we can pick from last discarded
-        var canPickFromDiscard = gameState.lastDiscarded.length > 0 || discardPile.length > 0;
-        if (!canPickFromDiscard) {
+        // Check if discard pile has cards available
+        if (discardPile.length === 0) {
             updateStatus("No cards available in discard pile!");
             return;
         }
