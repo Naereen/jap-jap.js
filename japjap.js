@@ -363,6 +363,9 @@ discardPile.click(function (card) {
             return;
         }
         
+        // Save the top card before discarding
+        var cardToPickFromDiscard = discardPile.topCard();
+        
         // Discard selected cards
         var newLastDiscarded = [];
         for (var i = 0; i < gameState.selectedCards.length; i++) {
@@ -375,12 +378,10 @@ discardPile.click(function (card) {
         lowerHand.render();
         discardPile.render();
         
-        // Pick from discard pile (top card)
-        if (discardPile.length > 0) {
-            lowerHand.addCard(discardPile.topCard());
-            lowerHand = lowerHand.sort();
-            lowerHand.render();
-        }
+        // Pick from discard pile (the card we saved earlier)
+        lowerHand.addCard(cardToPickFromDiscard);
+        lowerHand = lowerHand.sort();
+        lowerHand.render();
         
         gameState.lastDiscarded = newLastDiscarded;
         
