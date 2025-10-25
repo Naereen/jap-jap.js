@@ -59,9 +59,9 @@ a:visited {color:blue;}
 }
 
 #japjap-button {
-	position: absolute;
-	left:210px;
-	top:170px;
+	position: relative;
+	display: block;
+	margin: 10px auto;
 	background-color: #ff6b6b;
 	color: white;
 	font-weight: bold;
