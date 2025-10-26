@@ -118,26 +118,27 @@ function updateScores() {
 }
 
 // Position opponent hands based on number of players
+const opponentHandsDefaultxPosition = opponentHands[0].x;
 function positionOpponentHands() {
     var numOpponents = gameState.numPlayers - 1;
     
     if (numOpponents === 1) {
         // Single opponent at top center
-        opponentHands[0].x += 0;
+        opponentHands[0].x = opponentHandsDefaultxPosition;
         opponentHands[0].y = 60;
     } else if (numOpponents === 2) {
         // Two opponents: left and right quadrants at top
-        opponentHands[0].x += -200;
+        opponentHands[0].x = opponentHandsDefaultxPosition - 200;
         opponentHands[0].y = 60;
-        opponentHands[1].x += 200;
+        opponentHands[1].x = opponentHandsDefaultxPosition + 200;
         opponentHands[1].y = 60;
     } else if (numOpponents === 3) {
         // Three opponents: left, center, right at top
-        opponentHands[0].x += -240;
+        opponentHands[0].x = opponentHandsDefaultxPosition - 240;
         opponentHands[0].y = 60;
-        opponentHands[1].x += 0;
+        opponentHands[1].x = opponentHandsDefaultxPosition;
         opponentHands[1].y = 60;
-        opponentHands[2].x += 240;
+        opponentHands[2].x = opponentHandsDefaultxPosition + 240;
         opponentHands[2].y = 60;
     }
 }
