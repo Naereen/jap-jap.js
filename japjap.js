@@ -102,6 +102,14 @@ function sleep(ms) {
 }
 
 var defaultSleepBetweenOperations = 400;
+var opponentHandRevealDuration = 2000; // Duration to show opponent's hand when they call Jap-Jap
+
+// Helper function to reset opponent hands to face down
+function resetOpponentHandVisibility() {
+    for (var i = 0; i < gameState.numPlayers - 1; i++) {
+        opponentHands[i].faceUp = false;
+    }
+}
 
 // Update game status display
 function updateStatus(message) {
@@ -279,7 +287,7 @@ async function playOpponentTurn(opponentIndex) {
         // Show opponent's hand face up before announcing
         opponentHand.faceUp = true;
         opponentHand.render();
-        await sleep(2000); // Pause for 2 seconds to show the hand
+        await sleep(opponentHandRevealDuration); // Pause to show the hand
         updateStatus("Opponent " + (opponentIndex + 1) + " calls JAP JAP! Score: " + opponentScore);
         await endRound(false, opponentIndex); // Opponent wins
         return true; // Round ended
@@ -429,9 +437,10 @@ async function startNewRound() {
         while (opponentHands[i].length > 0) {
             opponentHands[i].pop();
         }
-        // Reset opponent hands to face down
-        opponentHands[i].faceUp = false;
     }
+    
+    // Reset opponent hands to face down
+    resetOpponentHandVisibility();
     
     // Render the empty hands to remove cards from display
     lowerHand.render({ immediate: true });
@@ -560,9 +569,7 @@ $('#deal').click(function () {
     positionOpponentHands();
     
     // Reset opponent hands to face down
-    for (var i = 0; i < gameState.numPlayers - 1; i++) {
-        opponentHands[i].faceUp = false;
-    }
+    resetOpponentHandVisibility();
     
     // Create array of all hands for dealing
     var allHands = [lowerHand];
