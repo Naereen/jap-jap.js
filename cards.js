@@ -287,12 +287,14 @@ var cards = (function() {
 	Hand.prototype.extend({
 		calcPosition : function(options) {
 			options = options || {};
-			var width = opt.cardSize.width + (this.length-1)*opt.cardSize.padding;
+			// Use smaller padding (10px) for face-down hands to make opponent cards more compact
+			var padding = this.faceUp ? opt.cardSize.padding : 10;
+			var width = opt.cardSize.width + (this.length-1)*padding;
 			var left = Math.round(this.x - width/2);
 			var top = Math.round(this.y-opt.cardSize.height/2, 0);
 			for (var i=0;i<this.length;i++) {
 				this[i].targetTop = top;
-				this[i].targetLeft = left+i*opt.cardSize.padding;
+				this[i].targetLeft = left+i*padding;
 			}
 		},
 		

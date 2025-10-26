@@ -326,19 +326,33 @@ async function startNewRound() {
         opponentHands[i].render({ immediate: true });
     }
     
-    // If deck is empty, reshuffle discard pile (keeping top card)
-    var cardsNeeded = 5 * gameState.numPlayers + 1;
+    // Check if we have enough cards to deal, reshuffle discard pile if needed
+    var cardsNeeded = 5 * gameState.numPlayers + 1; // 5 per player + 1 for discard
     if (deck.length < cardsNeeded) {
         var cardsToReshuffle = [];
-        // Keep the top card in discard pile, reshuffle the rest
-        while (discardPile.length > 1) {
-            cardsToReshuffle.push(discardPile[discardPile.length - 2]);
-            discardPile.splice(discardPile.length - 2, 1);
+        // Keep the top card in discard pile if we want to, or reshuffle all
+        // If we need all cards, reshuffle everything
+        var keepTopCard = discardPile.length > 1 && deck.length + discardPile.length - 1 >= cardsNeeded;
+        
+        if (keepTopCard) {
+            // Keep the top card in discard pile, reshuffle the rest
+            while (discardPile.length > 1) {
+                cardsToReshuffle.push(discardPile[discardPile.length - 2]);
+                discardPile.splice(discardPile.length - 2, 1);
+            }
+        } else {
+            // Need to reshuffle all cards including top card
+            while (discardPile.length > 0) {
+                cardsToReshuffle.push(discardPile.topCard());
+                discardPile.splice(discardPile.length - 1, 1);
+            }
         }
+        
         if (cardsToReshuffle.length > 0) {
             cards.shuffle(cardsToReshuffle);
             deck.addCards(cardsToReshuffle);
             deck.render({ immediate: true });
+            discardPile.render({ immediate: true });
         }
     }
     
@@ -436,6 +450,22 @@ $('#deal').click(function () {
     var allHands = [lowerHand];
     for (var i = 0; i < gameState.numPlayers - 1; i++) {
         allHands.push(opponentHands[i]);
+    }
+    
+    // Check if we have enough cards to deal, reshuffle discard pile if needed
+    var cardsNeeded = 5 * gameState.numPlayers + 1; // 5 per player + 1 for discard
+    if (deck.length < cardsNeeded && discardPile.length > 0) {
+        var cardsToReshuffle = [];
+        // Reshuffle all cards from discard pile
+        while (discardPile.length > 0) {
+            cardsToReshuffle.push(discardPile.topCard());
+            discardPile.splice(discardPile.length - 1, 1);
+        }
+        if (cardsToReshuffle.length > 0) {
+            cards.shuffle(cardsToReshuffle);
+            deck.addCards(cardsToReshuffle);
+            deck.render({ immediate: true });
+        }
     }
     
     // Deck has a built in method to deal to hands.
