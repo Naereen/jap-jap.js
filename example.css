@@ -65,7 +65,7 @@ h1 {
 	background-color:green;
 	height:400px;
 	width:100%;
-	max-width:800px;
+	max-width:100%;
 	margin: 0 auto;
 	border:solid 6px brown;
 	border-radius:8px;

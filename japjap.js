@@ -276,7 +276,10 @@ async function playOpponentTurn(opponentIndex) {
     var opponentScore = scoreOfHand(opponentHand);
     console.log("Opponent " + (opponentIndex + 1) + " hand value:", opponentScore);
     if (opponentScore <= 5) {
-        await sleep(defaultSleepBetweenOperations);
+        // Show opponent's hand face up before announcing
+        opponentHand.faceUp = true;
+        opponentHand.render();
+        await sleep(2000); // Pause for 2 seconds to show the hand
         updateStatus("Opponent " + (opponentIndex + 1) + " calls JAP JAP! Score: " + opponentScore);
         await endRound(false, opponentIndex); // Opponent wins
         return true; // Round ended
@@ -426,6 +429,8 @@ async function startNewRound() {
         while (opponentHands[i].length > 0) {
             opponentHands[i].pop();
         }
+        // Reset opponent hands to face down
+        opponentHands[i].faceUp = false;
     }
     
     // Render the empty hands to remove cards from display
@@ -553,6 +558,11 @@ $('#deal').click(function () {
     
     // Position opponent hands based on player count
     positionOpponentHands();
+    
+    // Reset opponent hands to face down
+    for (var i = 0; i < gameState.numPlayers - 1; i++) {
+        opponentHands[i].faceUp = false;
+    }
     
     // Create array of all hands for dealing
     var allHands = [lowerHand];

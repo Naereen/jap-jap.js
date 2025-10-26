@@ -40,6 +40,29 @@ A browser-based card game implementation of "Jap Jap" (also known as "Knock" or 
 - Don't wait too long to call "JAP JAP!" - your opponent might beat you to it!
 - Sometimes it's worth picking up a high card from the discard pile if it helps you form a valid play
 
+### AI Opponent Strategy
+
+The computer opponents use an intelligent strategy system:
+
+**Card Playing Strategy:**
+- Evaluates all possible plays (pairs, sequences, single cards)
+- Prioritizes discarding high-value cards to reduce hand score
+- Gives bonus value to plays that discard multiple cards at once
+- Considers whether remaining hand has good play opportunities
+- Selects the optimal play based on weighted scoring
+
+**Drawing Strategy:**
+- Picks from discard pile when the top card can:
+  - Complete or extend a pair/triplet (matching rank)
+  - Form or extend a sequence (adjacent rank in same suit)
+  - Replace high-value cards (picks low cards when holding high average hand value)
+- Otherwise draws from the deck for unpredictability
+
+**Winning Strategy:**
+- Checks for "JAP JAP!" opportunity at the start of each turn
+- Calls "JAP JAP!" immediately when hand value reaches 5 or less
+- Reveals hand face-up when calling "JAP JAP!" for transparency
+
 ## 🎮 How to Play
 
 1. Open `index.html` in your web browser
@@ -139,7 +162,7 @@ Give a ⭐️ if you enjoy this game!
 ## 📝 Notes
 
 - This game is still a work in progress
-- The AI opponent uses a simple strategy algorithm
+- The AI opponents use an intelligent strategy algorithm that evaluates plays strategically
 - Mobile support may be limited due to the card selection mechanism
 
 ---
