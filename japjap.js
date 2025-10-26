@@ -12,9 +12,15 @@ deck.addCards(cards.all);
 // No animation here, just get the deck onto the table.
 deck.render({ immediate: true });
 
-// Now lets create a couple of hands, one face down, one face up.
-upperHand = new cards.Hand({ faceUp: false, y: 60 });
-// Start with probability 1/2
+// Now lets create hands for opponents and player
+// We'll create up to 3 opponent hands, but only use what's needed based on player count
+opponentHands = [
+    new cards.Hand({ faceUp: false, y: 60 }),
+    new cards.Hand({ faceUp: false, y: 60 }),
+    new cards.Hand({ faceUp: false, y: 60 })
+];
+
+// Start with probability 1/numPlayers for who goes first
 yourTurn = Math.random() <= 0.5;
 lowerHand = new cards.Hand({ faceUp: true, y: 340 });
 
@@ -25,11 +31,13 @@ discardPile.x += 50;
 // Game state
 var gameState = {
     playerScore: 0,
-    opponentScore: 0,
+    opponentScores: [0, 0, 0], // Scores for up to 3 opponents
     selectedCards: [],
     lastDiscarded: [],
     gameStarted: false,
-    roundInProgress: false
+    roundInProgress: false,
+    numPlayers: 2, // Default to 2 players (1 opponent)
+    currentPlayerIndex: -1 // -1 = human player, 0-2 = opponents
 };
 
 // Compute the score of a hand (sum of rank of card)
@@ -102,20 +110,50 @@ function updateStatus(message) {
 
 // Update score display
 function updateScores() {
-    $('#player-score').text(gameState.playerScore);
-    $('#opponent-score').text(gameState.opponentScore);
+    var scoresText = 'You: ' + gameState.playerScore;
+    for (var i = 0; i < gameState.numPlayers - 1; i++) {
+        scoresText += ' | Opponent ' + (i + 1) + ': ' + gameState.opponentScores[i];
+    }
+    $('#scores-display').text(scoresText);
+}
+
+// Position opponent hands based on number of players
+function positionOpponentHands() {
+    var numOpponents = gameState.numPlayers - 1;
+    
+    if (numOpponents === 1) {
+        // Single opponent at top center
+        opponentHands[0].x = 0;
+        opponentHands[0].y = 60;
+    } else if (numOpponents === 2) {
+        // Two opponents: left and right at top
+        opponentHands[0].x = -150;
+        opponentHands[0].y = 60;
+        opponentHands[1].x = 150;
+        opponentHands[1].y = 60;
+    } else if (numOpponents === 3) {
+        // Three opponents: left, center, right at top
+        opponentHands[0].x = -200;
+        opponentHands[0].y = 60;
+        opponentHands[1].x = 0;
+        opponentHands[1].y = 60;
+        opponentHands[2].x = 200;
+        opponentHands[2].y = 60;
+    }
 }
 
 // Function "artificial intelligence" to let the opponent play
-async function playOpponentTurn() {
-    console.log("playOpponentTurn");
+async function playOpponentTurn(opponentIndex) {
+    console.log("playOpponentTurn for opponent " + (opponentIndex + 1));
     await sleep(defaultSleepBetweenOperations);
     
+    var opponentHand = opponentHands[opponentIndex];
+    
     // Simple AI: Try to play the lowest value card(s)
-    if (upperHand.length === 0) return;
+    if (opponentHand.length === 0) return;
     
     // Sort hand by rank
-    var sortedHand = upperHand.slice().sort((a, b) => a.rank - b.rank);
+    var sortedHand = opponentHand.slice().sort((a, b) => a.rank - b.rank);
     
     // Try to find valid plays (pairs, triplets, or sequences)
     var cardsToPlay = [sortedHand[0]]; // Play at least the lowest card
@@ -168,11 +206,11 @@ async function playOpponentTurn() {
     gameState.lastDiscarded = [];
     for (var i = 0; i < cardsToPlay.length; i++) {
         var card = cardsToPlay[i];
-        upperHand.removeCard(card);
+        opponentHand.removeCard(card);
         discardPile.addCard(card);
         gameState.lastDiscarded.push(card);
     }
-    upperHand.render();
+    opponentHand.render();
     discardPile.render();
     await sleep(defaultSleepBetweenOperations);
     
@@ -181,34 +219,46 @@ async function playOpponentTurn() {
         reshuffleDiscardPile();
     }
     if (deck.length > 0) {
-        upperHand.addCard(deck.topCard());
-        upperHand.render();
+        opponentHand.addCard(deck.topCard());
+        opponentHand.render();
     }
     await sleep(defaultSleepBetweenOperations);
     
     // Check if opponent should call "Jap Jap!"
-    var opponentScore = scoreOfHand(upperHand);
-    console.log("Opponent hand value:", opponentScore);
+    var opponentScore = scoreOfHand(opponentHand);
+    console.log("Opponent " + (opponentIndex + 1) + " hand value:", opponentScore);
     if (opponentScore <= 5) {
         await sleep(defaultSleepBetweenOperations);
-        updateStatus("Opponent calls JAP JAP! Score: " + opponentScore);
-        await endRound(false); // Opponent wins
+        updateStatus("Opponent " + (opponentIndex + 1) + " calls JAP JAP! Score: " + opponentScore);
+        await endRound(false, opponentIndex); // Opponent wins
+        return true; // Round ended
     }
+    return false; // Round continues
 }
 
 // End the round and calculate scores
-async function endRound(playerWins) {
+async function endRound(playerWins, winningOpponentIndex) {
     gameState.roundInProgress = false;
     
     var playerHandScore = scoreOfHand(lowerHand);
-    var opponentHandScore = scoreOfHand(upperHand);
     
     if (playerWins) {
-        gameState.opponentScore += opponentHandScore;
-        updateStatus("You win this round! Opponent gains " + opponentHandScore + " points.");
+        // All opponents gain their hand value
+        for (var i = 0; i < gameState.numPlayers - 1; i++) {
+            var opponentHandScore = scoreOfHand(opponentHands[i]);
+            gameState.opponentScores[i] += opponentHandScore;
+        }
+        updateStatus("You win this round!");
     } else {
+        // Player and other opponents gain their hand values
         gameState.playerScore += playerHandScore;
-        updateStatus("Opponent wins! You gain " + playerHandScore + " points.");
+        for (var i = 0; i < gameState.numPlayers - 1; i++) {
+            if (i !== winningOpponentIndex) {
+                var opponentHandScore = scoreOfHand(opponentHands[i]);
+                gameState.opponentScores[i] += opponentHandScore;
+            }
+        }
+        updateStatus("Opponent " + (winningOpponentIndex + 1) + " wins!");
     }
     
     updateScores();
@@ -218,23 +268,36 @@ async function endRound(playerWins) {
         var card = lowerHand.pop();
         discardPile.addCard(card);
     }
-    while (upperHand.length > 0) {
-        var card = upperHand.pop();
-        discardPile.addCard(card);
+    for (var i = 0; i < gameState.numPlayers - 1; i++) {
+        while (opponentHands[i].length > 0) {
+            var card = opponentHands[i].pop();
+            discardPile.addCard(card);
+        }
     }
     lowerHand.render({ immediate: true });
-    upperHand.render({ immediate: true });
+    for (var i = 0; i < gameState.numPlayers - 1; i++) {
+        opponentHands[i].render({ immediate: true });
+    }
     discardPile.render({ immediate: true });
     
     await sleep(2000);
     
     // Check if game is over (someone reached 90 points)
-    if (gameState.playerScore >= 90 || gameState.opponentScore >= 90) {
-        if (gameState.playerScore >= 90) {
-            updateStatus("GAME OVER! Opponent wins the game!");
-        } else {
-            updateStatus("GAME OVER! You win the game!");
+    var gameOver = false;
+    if (gameState.playerScore >= 90) {
+        updateStatus("GAME OVER! You lose the game!");
+        gameOver = true;
+    } else {
+        for (var i = 0; i < gameState.numPlayers - 1; i++) {
+            if (gameState.opponentScores[i] >= 90) {
+                updateStatus("GAME OVER! Opponent " + (i + 1) + " loses, you win!");
+                gameOver = true;
+                break;
+            }
         }
+    }
+    
+    if (gameOver) {
         $('#deal').text('NEW GAME').show();
         gameState.gameStarted = false;
     } else {
@@ -251,16 +314,21 @@ async function startNewRound() {
     while (lowerHand.length > 0) {
         lowerHand.pop();
     }
-    while (upperHand.length > 0) {
-        upperHand.pop();
+    for (var i = 0; i < gameState.numPlayers - 1; i++) {
+        while (opponentHands[i].length > 0) {
+            opponentHands[i].pop();
+        }
     }
     
     // Render the empty hands to remove cards from display
     lowerHand.render({ immediate: true });
-    upperHand.render({ immediate: true });
+    for (var i = 0; i < gameState.numPlayers - 1; i++) {
+        opponentHands[i].render({ immediate: true });
+    }
     
     // If deck is empty, reshuffle discard pile (keeping top card)
-    if (deck.length < 11) {
+    var cardsNeeded = 5 * gameState.numPlayers + 1;
+    if (deck.length < cardsNeeded) {
         var cardsToReshuffle = [];
         // Keep the top card in discard pile, reshuffle the rest
         while (discardPile.length > 1) {
@@ -278,8 +346,17 @@ async function startNewRound() {
     gameState.lastDiscarded = [];
     gameState.roundInProgress = true;
     
+    // Position opponent hands based on player count
+    positionOpponentHands();
+    
+    // Create array of all hands for dealing
+    var allHands = [lowerHand];
+    for (var i = 0; i < gameState.numPlayers - 1; i++) {
+        allHands.push(opponentHands[i]);
+    }
+    
     // Deal cards
-    deck.deal(5, [upperHand, lowerHand], 100, function () {
+    deck.deal(5, allHands, 100, function () {
         if (discardPile.length === 0 && deck.length > 0) {
             discardPile.addCard(deck.topCard());
         }
@@ -289,22 +366,46 @@ async function startNewRound() {
         updateStatus("Your turn! Select cards to play or pick from deck/discard.");
     });
     
-    // Randomly decide who starts
-    yourTurn = Math.random() <= 0.5;
-    if (!yourTurn) {
+    // Randomly decide who starts (player is -1, opponents are 0, 1, 2)
+    var randomStart = Math.floor(Math.random() * gameState.numPlayers);
+    if (randomStart === 0) {
+        gameState.currentPlayerIndex = -1; // Player starts
+    } else {
+        gameState.currentPlayerIndex = randomStart - 1; // Opponent starts
+    }
+    
+    if (gameState.currentPlayerIndex >= 0) {
+        // An opponent starts
         await sleep(1000);
-        await playOpponentTurn();
-        yourTurn = true;
+        await playAllOpponentTurnsUntilPlayer();
+    } else {
         updateStatus("Your turn! Select cards to play.");
     }
 }
 
-// Start of the game: the opponent plays ONCE if you don't start
-async function firstTurnOfOpponentIfNeeded() {
-    if (!yourTurn) {
-        await playOpponentTurn();
-        yourTurn = !yourTurn;
+// Play all opponent turns until it's the player's turn
+async function playAllOpponentTurnsUntilPlayer() {
+    while (gameState.currentPlayerIndex >= 0 && gameState.roundInProgress) {
+        updateStatus("Opponent " + (gameState.currentPlayerIndex + 1) + "'s turn...");
+        var roundEnded = await playOpponentTurn(gameState.currentPlayerIndex);
+        if (roundEnded) return;
+        
+        // Move to next player (cycle through all players)
+        gameState.currentPlayerIndex++;
+        if (gameState.currentPlayerIndex >= gameState.numPlayers - 1) {
+            // Back to player
+            gameState.currentPlayerIndex = -1;
+        }
+    }
+    if (gameState.roundInProgress) {
         updateStatus("Your turn! Select cards to play.");
+    }
+}
+
+// Start of the game: opponents play if needed
+async function firstTurnOfOpponentIfNeeded() {
+    if (gameState.currentPlayerIndex >= 0) {
+        await playAllOpponentTurnsUntilPlayer();
     } else {
         updateStatus("Your turn! Select cards to play.");
     }
@@ -312,10 +413,13 @@ async function firstTurnOfOpponentIfNeeded() {
 
 // Let's deal when the Deal button is pressed:
 $('#deal').click(function () {
+    // Get selected player count
+    gameState.numPlayers = parseInt($('#player-count').val());
+    
     // Reset game if starting new game
     if (!gameState.gameStarted) {
         gameState.playerScore = 0;
-        gameState.opponentScore = 0;
+        gameState.opponentScores = [0, 0, 0];
         updateScores();
         $('#deal').text('DEAL');
     }
@@ -325,9 +429,18 @@ $('#deal').click(function () {
     gameState.selectedCards = [];
     gameState.lastDiscarded = [];
     
+    // Position opponent hands based on player count
+    positionOpponentHands();
+    
+    // Create array of all hands for dealing
+    var allHands = [lowerHand];
+    for (var i = 0; i < gameState.numPlayers - 1; i++) {
+        allHands.push(opponentHands[i]);
+    }
+    
     // Deck has a built in method to deal to hands.
     $('#deal').hide();
-    deck.deal(5, [upperHand, lowerHand], 100, function () {
+    deck.deal(5, allHands, 100, function () {
         // This is a callback function, called when the dealing is done.
         if (deck.length > 0) {
             discardPile.addCard(deck.topCard());
@@ -336,13 +449,22 @@ $('#deal').click(function () {
         lowerHand = lowerHand.sort();
         lowerHand.render();
     });
+    
+    // Randomly decide who starts (player is -1, opponents are 0, 1, 2)
+    var randomStart = Math.floor(Math.random() * gameState.numPlayers);
+    if (randomStart === 0) {
+        gameState.currentPlayerIndex = -1; // Player starts
+    } else {
+        gameState.currentPlayerIndex = randomStart - 1; // Opponent starts
+    }
+    
     firstTurnOfOpponentIfNeeded();
 });
 
 
 // When you click on the top card of a deck, a card is added to your hand
 deck.click(function (card) {
-    if (!yourTurn || !gameState.roundInProgress) return;
+    if (gameState.currentPlayerIndex !== -1 || !gameState.roundInProgress) return;
     
     if (card === deck.topCard() && gameState.selectedCards.length > 0) {
         // Play selected cards, then pick from deck
@@ -377,24 +499,19 @@ deck.click(function (card) {
         var playerScore = scoreOfHand(lowerHand);
         console.log("Your hand value:", playerScore);
         
-        // Switch turn
-        yourTurn = false;
-        updateStatus("Opponent's turn...");
+        // Move to next player (first opponent)
+        gameState.currentPlayerIndex = 0;
         
-        // Play opponent's turn
+        // Play opponent's turns
         setTimeout(async function() {
-            await playOpponentTurn();
-            yourTurn = true;
-            if (gameState.roundInProgress) {
-                updateStatus("Your turn! Select cards to play.");
-            }
+            await playAllOpponentTurnsUntilPlayer();
         }, 500);
     }
 });
 
 // When you click on the discard pile, pick a card from the discard pile
 discardPile.click(function (card) {
-    if (!yourTurn || !gameState.roundInProgress) return;
+    if (gameState.currentPlayerIndex !== -1 || !gameState.roundInProgress) return;
     
     if (gameState.selectedCards.length > 0) {
         // Play selected cards, then pick from discard
@@ -435,24 +552,19 @@ discardPile.click(function (card) {
         var playerScore = scoreOfHand(lowerHand);
         console.log("Your hand value:", playerScore);
         
-        // Switch turn
-        yourTurn = false;
-        updateStatus("Opponent's turn...");
+        // Move to next player (first opponent)
+        gameState.currentPlayerIndex = 0;
         
-        // Play opponent's turn
+        // Play opponent's turns
         setTimeout(async function() {
-            await playOpponentTurn();
-            yourTurn = true;
-            if (gameState.roundInProgress) {
-                updateStatus("Your turn! Select cards to play.");
-            }
+            await playAllOpponentTurnsUntilPlayer();
         }, 500);
     }
 });
 
 // When you click a card in your hand, select/deselect it for playing
 lowerHand.click(async function (card) {
-    if (!yourTurn || !gameState.roundInProgress) return;
+    if (gameState.currentPlayerIndex !== -1 || !gameState.roundInProgress) return;
     
     // Toggle card selection
     var index = gameState.selectedCards.indexOf(card);
@@ -477,12 +589,12 @@ lowerHand.click(async function (card) {
 
 // Add Jap Jap button functionality
 $('#japjap-button').click(async function() {
-    if (!yourTurn || !gameState.roundInProgress) return;
+    if (gameState.currentPlayerIndex !== -1 || !gameState.roundInProgress) return;
     
     var playerScore = scoreOfHand(lowerHand);
     if (playerScore <= 5) {
         updateStatus("You call JAP JAP! Score: " + playerScore);
-        await endRound(true); // Player wins
+        await endRound(true, -1); // Player wins
     } else {
         updateStatus("Cannot call Jap Jap! Your score (" + playerScore + ") is greater than 5.");
     }

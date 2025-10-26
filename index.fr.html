@@ -14,12 +14,19 @@
 		</div>
 
 		<div id="game-info">
+			<div id="player-count-selector">
+				<strong>Nombre de joueurs :</strong>
+				<select id="player-count">
+					<option value="2">2 (Vous + 1 adversaire)</option>
+					<option value="3">3 (Vous + 2 adversaires)</option>
+					<option value="4">4 (Vous + 3 adversaires)</option>
+				</select>
+			</div>
 			<div id="scores">
 				<strong>Scores :</strong> 
-				Vous : <span id="player-score">0</span> | 
-				Adversaire : <span id="opponent-score">0</span>
+				<span id="scores-display">Vous : 0 | Adversaire 1 : 0</span>
 			</div>
-			<div id="status-message">Cliquez sur DISTRIBUER pour commencer le jeu !</div>
+			<div id="status-message">Sélectionnez le nombre de joueurs et cliquez sur DISTRIBUER pour commencer le jeu !</div>
 		</div>
 
 		<img class="preload" src="img/cards.png"/>
