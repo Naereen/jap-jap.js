@@ -143,6 +143,125 @@ function positionOpponentHands() {
     }
 }
 
+// AI Helper: Find all possible plays from a hand
+function findAllPossiblePlays(hand) {
+    var plays = [];
+    
+    // Find all pairs, triplets, and quadruplets
+    var rankGroups = {};
+    for (var i = 0; i < hand.length; i++) {
+        var rank = hand[i].rank;
+        if (!rankGroups[rank]) {
+            rankGroups[rank] = [];
+        }
+        rankGroups[rank].push(hand[i]);
+    }
+    
+    for (var rank in rankGroups) {
+        var cards = rankGroups[rank];
+        if (cards.length >= 2) {
+            // Add all combinations of 2 or more cards of the same rank
+            for (var size = 2; size <= cards.length; size++) {
+                plays.push(cards.slice(0, size));
+            }
+        }
+    }
+    
+    // Find all sequences
+    var cardsBySuit = {};
+    for (var i = 0; i < hand.length; i++) {
+        var suit = hand[i].suit;
+        if (!cardsBySuit[suit]) {
+            cardsBySuit[suit] = [];
+        }
+        cardsBySuit[suit].push(hand[i]);
+    }
+    
+    for (var suit in cardsBySuit) {
+        var suitCards = cardsBySuit[suit].sort((a, b) => a.rank - b.rank);
+        for (var i = 0; i < suitCards.length; i++) {
+            var sequence = [suitCards[i]];
+            for (var j = i + 1; j < suitCards.length; j++) {
+                if (suitCards[j].rank === sequence[sequence.length - 1].rank + 1) {
+                    sequence.push(suitCards[j]);
+                } else {
+                    break;
+                }
+            }
+            // Only add sequences of 2 or more cards (add once per starting position)
+            if (sequence.length >= 2) {
+                plays.push(sequence);
+            }
+        }
+    }
+    
+    // Add single card plays
+    for (var i = 0; i < hand.length; i++) {
+        plays.push([hand[i]]);
+    }
+    
+    return plays;
+}
+
+// AI Helper: Evaluate the value of a play (higher is better to discard)
+function evaluatePlay(play, remainingHand) {
+    var playValue = 0;
+    
+    // Sum up the ranks of cards being discarded (prioritize high-value cards)
+    for (var i = 0; i < play.length; i++) {
+        playValue += play[i].rank;
+    }
+    
+    // Bonus for playing multiple cards at once (more efficient)
+    if (play.length > 1) {
+        playValue += play.length * 2;
+    }
+    
+    // Check if remaining hand has potential for good plays
+    var remainingPlays = findAllPossiblePlays(remainingHand);
+    var hasGoodRemainingPlay = remainingPlays.some(p => p.length > 1);
+    if (hasGoodRemainingPlay) {
+        playValue += 3; // Bonus if we leave ourselves with good options
+    }
+    
+    return playValue;
+}
+
+// AI Helper: Decide whether to pick from discard pile or deck
+function shouldPickFromDiscard(hand, discardTopCard) {
+    if (!discardTopCard || discardPile.length === 0) {
+        return false;
+    }
+    
+    // Check if the discard card helps complete a pair/triplet
+    var matchingRank = hand.filter(c => c.rank === discardTopCard.rank).length;
+    if (matchingRank >= 1) {
+        // Taking it would create/extend a pair
+        return true;
+    }
+    
+    // Check if the discard card extends a sequence
+    var sameSuitCards = hand.filter(c => c.suit === discardTopCard.suit);
+    for (var i = 0; i < sameSuitCards.length; i++) {
+        var card = sameSuitCards[i];
+        if (Math.abs(card.rank - discardTopCard.rank) === 1) {
+            // Adjacent rank in same suit - could form/extend sequence
+            return true;
+        }
+    }
+    
+    // Check if discard card is low value (Ace through 4) and we have high cards
+    if (discardTopCard.rank <= 4) {
+        var avgHandValue = scoreOfHand(hand) / hand.length;
+        if (avgHandValue > 7) {
+            // Our hand has high average, low card is valuable
+            return true;
+        }
+    }
+    
+    return false;
+}
+
 // Function "artificial intelligence" to let the opponent play
 async function playOpponentTurn(opponentIndex) {
     console.log("playOpponentTurn for opponent " + (opponentIndex + 1));
@@ -150,58 +269,31 @@ async function playOpponentTurn(opponentIndex) {
     
     var opponentHand = opponentHands[opponentIndex];
     
-    // Simple AI: Try to play the lowest value card(s)
+    // Improved AI: Strategic play selection
     if (opponentHand.length === 0) return;
     
-    // Sort hand by rank
-    var sortedHand = opponentHand.slice().sort((a, b) => a.rank - b.rank);
+    // Find all possible plays
+    var allPlays = findAllPossiblePlays(opponentHand);
     
-    // Try to find valid plays (pairs, triplets, or sequences)
-    var cardsToPlay = [sortedHand[0]]; // Play at least the lowest card
+    // Evaluate each play and choose the best one
+    var bestPlay = null;
+    var bestScore = -1;
     
-    // Check for pairs/triplets/quadruplets of the same rank
-    for (var i = 1; i < sortedHand.length; i++) {
-        if (sortedHand[i].rank === sortedHand[0].rank) {
-            cardsToPlay.push(sortedHand[i]);
+    for (var i = 0; i < allPlays.length; i++) {
+        var play = allPlays[i];
+        // Use a Set for O(1) lookup instead of includes() for O(n) lookup
+        var playSet = new Set(play);
+        var remainingCards = opponentHand.filter(function(c) { return !playSet.has(c); });
+        var score = evaluatePlay(play, remainingCards);
+        
+        if (score > bestScore) {
+            bestScore = score;
+            bestPlay = play;
         }
     }
     
-    // If only one card, check for a sequence
-    if (cardsToPlay.length === 1) {
-        var sequences = [];
-        // Group cards by suit
-        var cardsBySuit = {};
-        for (var i = 0; i < sortedHand.length; i++) {
-            var suit = sortedHand[i].suit;
-            if (!cardsBySuit[suit]) {
-                cardsBySuit[suit] = [];
-            }
-            cardsBySuit[suit].push(sortedHand[i]);
-        }
-        
-        // Find sequences within each suit
-        for (var suit in cardsBySuit) {
-            var suitCards = cardsBySuit[suit].sort((a, b) => a.rank - b.rank);
-            for (var i = 0; i < suitCards.length; i++) {
-                var sequence = [suitCards[i]];
-                for (var j = i + 1; j < suitCards.length; j++) {
-                    if (suitCards[j].rank === sequence[sequence.length - 1].rank + 1) {
-                        sequence.push(suitCards[j]);
-                    } else {
-                        break;
-                    }
-                }
-                if (sequence.length > 1) {
-                    sequences.push(sequence);
-                }
-            }
-        }
-        
-        // Use the longest sequence found
-        if (sequences.length > 0) {
-            cardsToPlay = sequences.sort((a, b) => b.length - a.length)[0];
-        }
-    }
+    // Use best play (or single lowest card as fallback)
+    var cardsToPlay = bestPlay || [opponentHand.slice().sort((a, b) => a.rank - b.rank)[0]];
     
     // Play the selected cards
     gameState.lastDiscarded = [];
@@ -215,14 +307,28 @@ async function playOpponentTurn(opponentIndex) {
     discardPile.render();
     await sleep(defaultSleepBetweenOperations);
     
-    // Pick a new card from the deck
-    if (deck.length === 0) {
-        reshuffleDiscardPile();
+    // Decide whether to pick from discard or deck
+    var pickFromDiscard = false;
+    if (discardPile.length > 0) {
+        var topCard = discardPile.topCard();
+        pickFromDiscard = shouldPickFromDiscard(opponentHand, topCard);
     }
-    if (deck.length > 0) {
-        opponentHand.addCard(deck.topCard());
-        opponentHand.render();
+    
+    if (pickFromDiscard && discardPile.length > 0) {
+        // Pick from discard pile
+        var cardFromDiscard = discardPile.topCard();
+        opponentHand.addCard(cardFromDiscard);
+        console.log("Opponent " + (opponentIndex + 1) + " picks from discard: " + cardFromDiscard.toString());
+    } else {
+        // Pick from deck
+        if (deck.length === 0) {
+            reshuffleDiscardPile();
+        }
+        if (deck.length > 0) {
+            opponentHand.addCard(deck.topCard());
+        }
     }
+    opponentHand.render();
     await sleep(defaultSleepBetweenOperations);
     
     // Check if opponent should call "Jap Jap!"
