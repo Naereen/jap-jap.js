@@ -70,7 +70,6 @@ function isValidPlay(cards) {
 function reshuffleDiscardPile() {
     if (deck.length === 0 && discardPile.length > 1) {
         // Keep the top card in discard pile
-        var topCard = discardPile.topCard();
         var cardsToReshuffle = [];
         
         // Remove all cards except the top one
