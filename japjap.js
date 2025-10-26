@@ -272,6 +272,16 @@ async function playOpponentTurn(opponentIndex) {
     // Improved AI: Strategic play selection
     if (opponentHand.length === 0) return;
     
+    // Check if opponent should call "Jap Jap!" at the BEGINNING of their turn
+    var opponentScore = scoreOfHand(opponentHand);
+    console.log("Opponent " + (opponentIndex + 1) + " hand value:", opponentScore);
+    if (opponentScore <= 5) {
+        await sleep(defaultSleepBetweenOperations);
+        updateStatus("Opponent " + (opponentIndex + 1) + " calls JAP JAP! Score: " + opponentScore);
+        await endRound(false, opponentIndex); // Opponent wins
+        return true; // Round ended
+    }
+    
     // Find all possible plays
     var allPlays = findAllPossiblePlays(opponentHand);
     
@@ -331,15 +341,6 @@ async function playOpponentTurn(opponentIndex) {
     opponentHand.render();
     await sleep(defaultSleepBetweenOperations);
     
-    // Check if opponent should call "Jap Jap!"
-    var opponentScore = scoreOfHand(opponentHand);
-    console.log("Opponent " + (opponentIndex + 1) + " hand value:", opponentScore);
-    if (opponentScore <= 5) {
-        await sleep(defaultSleepBetweenOperations);
-        updateStatus("Opponent " + (opponentIndex + 1) + " calls JAP JAP! Score: " + opponentScore);
-        await endRound(false, opponentIndex); // Opponent wins
-        return true; // Round ended
-    }
     return false; // Round continues
 }
 
