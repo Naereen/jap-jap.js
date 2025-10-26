@@ -67,11 +67,20 @@
             <script>
                 // Fetch and display the latest commit hash
                 fetch('https://api.github.com/repos/Naereen/jap-jap.js/commits/main')
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to fetch commit info');
+                        }
+                        return response.json();
+                    })
                     .then(data => {
-                        const shortHash = data.sha.substring(0, 7);
-                        document.getElementById('commit-hash').textContent = shortHash;
-                        document.getElementById('commit-link').href = 'https://github.com/Naereen/jap-jap.js/commit/' + data.sha;
+                        if (data && data.sha) {
+                            const shortHash = data.sha.substring(0, 7);
+                            document.getElementById('commit-hash').textContent = shortHash;
+                            document.getElementById('commit-link').href = 'https://github.com/Naereen/jap-jap.js/commit/' + data.sha;
+                        } else {
+                            document.getElementById('commit-hash').textContent = 'unavailable';
+                        }
                     })
                     .catch(error => {
                         document.getElementById('commit-hash').textContent = 'unavailable';
