@@ -101,7 +101,7 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-var defaultSleepBetweenOperations = 300;
+var defaultSleepBetweenOperations = 400;
 
 // Update game status display
 function updateStatus(message) {
@@ -123,21 +123,21 @@ function positionOpponentHands() {
     
     if (numOpponents === 1) {
         // Single opponent at top center
-        opponentHands[0].x = 0;
+        opponentHands[0].x += 0;
         opponentHands[0].y = 60;
     } else if (numOpponents === 2) {
         // Two opponents: left and right quadrants at top
-        opponentHands[0].x = -200;
+        opponentHands[0].x += -200;
         opponentHands[0].y = 60;
-        opponentHands[1].x = 200;
+        opponentHands[1].x += 200;
         opponentHands[1].y = 60;
     } else if (numOpponents === 3) {
         // Three opponents: left, center, right at top
-        opponentHands[0].x = -240;
+        opponentHands[0].x += -240;
         opponentHands[0].y = 60;
-        opponentHands[1].x = 0;
+        opponentHands[1].x += 0;
         opponentHands[1].y = 60;
-        opponentHands[2].x = 240;
+        opponentHands[2].x += 240;
         opponentHands[2].y = 60;
     }
 }
