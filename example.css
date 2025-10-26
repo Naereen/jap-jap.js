@@ -119,6 +119,22 @@ a:visited {color:blue;}
 	border-radius: 5px;
 }
 
+#player-count-selector {
+	font-size: 16px;
+	margin-bottom: 10px;
+	padding: 5px;
+}
+
+#player-count {
+	margin-left: 10px;
+	padding: 5px 10px;
+	font-size: 14px;
+	border: 1px solid #555;
+	border-radius: 4px;
+	background-color: white;
+	cursor: pointer;
+}
+
 #scores {
 	font-size: 18px;
 	margin-bottom: 5px;

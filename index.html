@@ -14,12 +14,19 @@
 		</div>
 
 		<div id="game-info">
+			<div id="player-count-selector">
+				<strong>Number of players:</strong>
+				<select id="player-count">
+					<option value="2">2 (You + 1 opponent)</option>
+					<option value="3">3 (You + 2 opponents)</option>
+					<option value="4">4 (You + 3 opponents)</option>
+				</select>
+			</div>
 			<div id="scores">
 				<strong>Scores:</strong> 
-				You: <span id="player-score">0</span> | 
-				Opponent: <span id="opponent-score">0</span>
+				<span id="scores-display">You: 0 | Opponent 1: 0</span>
 			</div>
-			<div id="status-message">Click DEAL to start the game!</div>
+			<div id="status-message">Select number of players and click DEAL to start the game!</div>
 		</div>
 
 		<img class="preload" src="img/cards.png"/>
