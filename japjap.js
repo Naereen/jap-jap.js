@@ -184,12 +184,13 @@ function findAllPossiblePlays(hand) {
             for (var j = i + 1; j < suitCards.length; j++) {
                 if (suitCards[j].rank === sequence[sequence.length - 1].rank + 1) {
                     sequence.push(suitCards[j]);
-                    if (sequence.length >= 2) {
-                        plays.push(sequence.slice());
-                    }
                 } else {
                     break;
                 }
+            }
+            // Only add sequences of 2 or more cards (add once per starting position)
+            if (sequence.length >= 2) {
+                plays.push(sequence);
             }
         }
     }
@@ -280,7 +281,9 @@ async function playOpponentTurn(opponentIndex) {
     
     for (var i = 0; i < allPlays.length; i++) {
         var play = allPlays[i];
-        var remainingCards = opponentHand.filter(c => !play.includes(c));
+        // Use a Set for O(1) lookup instead of includes() for O(n) lookup
+        var playSet = new Set(play);
+        var remainingCards = opponentHand.filter(function(c) { return !playSet.has(c); });
         var score = evaluatePlay(play, remainingCards);
         
         if (score > bestScore) {
