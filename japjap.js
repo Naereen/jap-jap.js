@@ -66,6 +66,28 @@ function isValidPlay(cards) {
     return true;
 }
 
+// Function to reshuffle discard pile into deck when deck is empty
+function reshuffleDiscardPile() {
+    if (deck.length === 0 && discardPile.length > 1) {
+        // Keep the top card in discard pile
+        var cardsToReshuffle = [];
+        
+        // Remove all cards except the top one
+        while (discardPile.length > 1) {
+            cardsToReshuffle.push(discardPile[discardPile.length - 2]);
+            discardPile.splice(discardPile.length - 2, 1);
+        }
+        
+        // Shuffle and add to deck
+        cards.shuffle(cardsToReshuffle);
+        deck.addCards(cardsToReshuffle);
+        deck.render({ immediate: true });
+        discardPile.render({ immediate: true });
+        
+        console.log("Reshuffled " + cardsToReshuffle.length + " cards from discard pile to deck");
+    }
+}
+
 // Wait for some time
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -155,6 +177,9 @@ async function playOpponentTurn() {
     await sleep(defaultSleepBetweenOperations);
     
     // Pick a new card from the deck
+    if (deck.length === 0) {
+        reshuffleDiscardPile();
+    }
     if (deck.length > 0) {
         upperHand.addCard(deck.topCard());
         upperHand.render();
@@ -187,6 +212,20 @@ async function endRound(playerWins) {
     }
     
     updateScores();
+    
+    // Force discard current hands immediately when Jap Jap is realized
+    while (lowerHand.length > 0) {
+        var card = lowerHand.pop();
+        discardPile.addCard(card);
+    }
+    while (upperHand.length > 0) {
+        var card = upperHand.pop();
+        discardPile.addCard(card);
+    }
+    lowerHand.render({ immediate: true });
+    upperHand.render({ immediate: true });
+    discardPile.render({ immediate: true });
+    
     await sleep(2000);
     
     // Check if game is over (someone reached 90 points)
@@ -325,6 +364,9 @@ deck.click(function (card) {
         discardPile.render();
         
         // Pick from deck
+        if (deck.length === 0) {
+            reshuffleDiscardPile();
+        }
         if (deck.length > 0) {
             lowerHand.addCard(deck.topCard());
             lowerHand = lowerHand.sort();

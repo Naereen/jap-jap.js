@@ -10,7 +10,7 @@
 		<h1>Jap Jap !</h1>
 
 		<div id="language-switch" style="text-align: right; margin-bottom: 10px;">
-			<a href="index.html">English</a> | <a href="index.fr.html">Français</a>
+			<a href="index.html">🇬🇧 English</a> | <a href="index.fr.html">🇫🇷 Français</a>
 		</div>
 
 		<div id="game-info">
@@ -41,13 +41,27 @@
 		</div>
 		
 		<footer>
-            This game is still a work in progress, written by <a href="https://perso.crans.org/besson/">Lilian Besson</a> (<a href="https://github.com/Naereen/">Naereen</a>).
+            This game is still a work in progress (<a id="commit-link" href="https://github.com/Naereen/jap-jap.js/commits/main" target="_blank">commit <span id="commit-hash">loading...</span></a>), written by <a href="https://perso.crans.org/besson/">Lilian Besson</a> (<a href="https://github.com/Naereen/">Naereen</a>).
             <br>
 			cards.js was created by <a href="http://einaregilsson.com">Einar Egilsson</a> and is licensed under the MIT license. The card images were created by <a href="http://nicubunu.ro">Nicu Buculei</a> and are in the public domain.
             <br>
             <a href="https://github.com/Naereen/jap-jap.js/">View this project on GitHub</a>
             <br>
             <em>This project was developed with assistance from GitHub Copilot.</em>
+            <script>
+                // Fetch and display the latest commit hash
+                fetch('https://api.github.com/repos/Naereen/jap-jap.js/commits/main')
+                    .then(response => response.json())
+                    .then(data => {
+                        const shortHash = data.sha.substring(0, 7);
+                        document.getElementById('commit-hash').textContent = shortHash;
+                        document.getElementById('commit-link').href = 'https://github.com/Naereen/jap-jap.js/commit/' + data.sha;
+                    })
+                    .catch(error => {
+                        document.getElementById('commit-hash').textContent = 'unavailable';
+                        console.error('Error fetching commit:', error);
+                    });
+            </script>
 		</footer>
 		<!-- load this at the bottom so the #card-table element exists -->
 		<script src="cards.js"></script>
