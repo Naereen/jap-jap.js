@@ -216,6 +216,10 @@ async function startNewRound() {
         upperHand.pop();
     }
     
+    // Render the empty hands to remove cards from display
+    lowerHand.render({ immediate: true });
+    upperHand.render({ immediate: true });
+    
     // If deck is empty, reshuffle discard pile (keeping top card)
     if (deck.length < 11) {
         var cardsToReshuffle = [];
