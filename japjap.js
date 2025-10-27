@@ -37,7 +37,8 @@ var gameState = {
     gameStarted: false,
     roundInProgress: false,
     numPlayers: 2, // Default to 2 players (1 opponent)
-    currentPlayerIndex: -1 // -1 = human player, 0-2 = opponents
+    currentPlayerIndex: -1, // -1 = human player, 0-2 = opponents
+    hasPlayedInRound: false // Track if any cards have been played in current round
 };
 
 // Compute the score of a hand (sum of rank of card)
@@ -281,9 +282,10 @@ async function playOpponentTurn(opponentIndex) {
     if (opponentHand.length === 0) return;
     
     // Check if opponent should call "Jap Jap!" at the BEGINNING of their turn
+    // But only if at least one card has been played in this round
     var opponentScore = scoreOfHand(opponentHand);
     console.log("Opponent " + (opponentIndex + 1) + " hand value:", opponentScore);
-    if (opponentScore <= 5) {
+    if (opponentScore <= 5 && gameState.hasPlayedInRound) {
         // Show opponent's hand face up before announcing
         opponentHand.faceUp = true;
         opponentHand.render();
@@ -318,6 +320,7 @@ async function playOpponentTurn(opponentIndex) {
     
     // Play the selected cards
     gameState.lastDiscarded = [];
+    gameState.hasPlayedInRound = true; // Mark that cards have been played in this round
     for (var i = 0; i < cardsToPlay.length; i++) {
         var card = cardsToPlay[i];
         opponentHand.removeCard(card);
@@ -481,6 +484,7 @@ async function startNewRound() {
     gameState.selectedCards = [];
     gameState.lastDiscarded = [];
     gameState.roundInProgress = true;
+    gameState.hasPlayedInRound = false; // Reset for new round
     
     // Position opponent hands based on player count
     positionOpponentHands();
@@ -564,6 +568,7 @@ $('#deal').click(function () {
     gameState.roundInProgress = true;
     gameState.selectedCards = [];
     gameState.lastDiscarded = [];
+    gameState.hasPlayedInRound = false; // Reset for new round
     
     // Position opponent hands based on player count
     positionOpponentHands();
@@ -630,6 +635,7 @@ deck.click(function (card) {
         
         // Discard selected cards
         gameState.lastDiscarded = [];
+        gameState.hasPlayedInRound = true; // Mark that cards have been played in this round
         for (var i = 0; i < gameState.selectedCards.length; i++) {
             var cardToDiscard = gameState.selectedCards[i];
             lowerHand.removeCard(cardToDiscard);
@@ -686,6 +692,7 @@ discardPile.click(function (card) {
         
         // Discard selected cards
         var newLastDiscarded = [];
+        gameState.hasPlayedInRound = true; // Mark that cards have been played in this round
         for (var i = 0; i < gameState.selectedCards.length; i++) {
             var cardToDiscard = gameState.selectedCards[i];
             lowerHand.removeCard(cardToDiscard);
@@ -747,9 +754,11 @@ $('#japjap-button').click(async function() {
     if (gameState.currentPlayerIndex !== -1 || !gameState.roundInProgress) return;
     
     var playerScore = scoreOfHand(lowerHand);
-    if (playerScore <= 5) {
+    if (playerScore <= 5 && gameState.hasPlayedInRound) {
         updateStatus("You call JAP JAP! Score: " + playerScore);
         await endRound(true, -1); // Player wins
+    } else if (playerScore <= 5 && !gameState.hasPlayedInRound) {
+        updateStatus("Cannot call Jap Jap yet! You must play at least one turn first.");
     } else {
         updateStatus("Cannot call Jap Jap! Your score (" + playerScore + ") is greater than 5.");
     }
