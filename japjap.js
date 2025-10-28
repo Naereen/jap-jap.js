@@ -97,6 +97,31 @@ function reshuffleDiscardPile() {
     }
 }
 
+// Function to reshuffle discard pile while preserving a specific card on top
+function reshuffleDiscardPileKeepingCard(savedCard) {
+    if (savedCard && discardPile.length > 1) {
+        var cardsToReshuffle = [];
+        // Remove all cards from discard pile
+        while (discardPile.length > 0) {
+            var c = discardPile.topCard();
+            discardPile.splice(discardPile.length - 1, 1);
+            if (c !== savedCard) {
+                cardsToReshuffle.push(c);
+            }
+        }
+        // Shuffle and add to deck
+        cards.shuffle(cardsToReshuffle);
+        deck.addCards(cardsToReshuffle);
+        // Put the saved card back on top of discard pile
+        discardPile.addCard(savedCard);
+        deck.render({ immediate: true });
+        discardPile.render({ immediate: true });
+        console.log("Reshuffled " + cardsToReshuffle.length + " cards from discard pile to deck, kept " + savedCard.toString() + " on top");
+    } else {
+        reshuffleDiscardPile();
+    }
+}
+
 // Wait for some time
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -318,6 +343,21 @@ async function playOpponentTurn(opponentIndex) {
     // Use best play (or single lowest card as fallback)
     var cardsToPlay = bestPlay || [opponentHand.slice().sort((a, b) => a.rank - b.rank)[0]];
     
+    // Save the top card of discard pile before discarding (if deck is empty and opponent will pick from deck)
+    var savedDiscardTop = null;
+    
+    // Decide whether to pick from discard or deck BEFORE playing cards
+    var pickFromDiscard = false;
+    if (discardPile.length > 0) {
+        var topCard = discardPile.topCard();
+        pickFromDiscard = shouldPickFromDiscard(opponentHand, topCard);
+    }
+    
+    // If opponent will pick from deck and deck is empty, save the current discard top
+    if (!pickFromDiscard && deck.length === 0 && discardPile.length > 0) {
+        savedDiscardTop = discardPile.topCard();
+    }
+    
     // Play the selected cards
     gameState.lastDiscarded = [];
     gameState.hasPlayedInRound = true; // Mark that cards have been played in this round
@@ -331,13 +371,6 @@ async function playOpponentTurn(opponentIndex) {
     discardPile.render();
     await sleep(defaultSleepBetweenOperations);
     
-    // Decide whether to pick from discard or deck
-    var pickFromDiscard = false;
-    if (discardPile.length > 0) {
-        var topCard = discardPile.topCard();
-        pickFromDiscard = shouldPickFromDiscard(opponentHand, topCard);
-    }
-    
     if (pickFromDiscard && discardPile.length > 0) {
         // Pick from discard pile
         var cardFromDiscard = discardPile.topCard();
@@ -346,7 +379,7 @@ async function playOpponentTurn(opponentIndex) {
     } else {
         // Pick from deck
         if (deck.length === 0) {
-            reshuffleDiscardPile();
+            reshuffleDiscardPileKeepingCard(savedDiscardTop);
         }
         if (deck.length > 0) {
             opponentHand.addCard(deck.topCard());
@@ -659,6 +692,12 @@ deck.click(function (card) {
             return;
         }
         
+        // Save the top card of discard pile before discarding (if deck is empty)
+        var savedDiscardTop = null;
+        if (deck.length === 0 && discardPile.length > 0) {
+            savedDiscardTop = discardPile.topCard();
+        }
+        
         // Discard selected cards
         gameState.lastDiscarded = [];
         gameState.hasPlayedInRound = true; // Mark that cards have been played in this round
@@ -674,7 +713,7 @@ deck.click(function (card) {
         
         // Pick from deck
         if (deck.length === 0) {
-            reshuffleDiscardPile();
+            reshuffleDiscardPileKeepingCard(savedDiscardTop);
         }
         if (deck.length > 0) {
             lowerHand.addCard(deck.topCard());
