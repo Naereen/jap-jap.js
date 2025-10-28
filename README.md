@@ -39,7 +39,7 @@ A browser-based card game implementation of "Jap Jap" (also known as "Knock" or 
 - Try to form sequences or pairs early to discard high-value cards
 - Watch the discard pile for cards that might help you complete a sequence
 - Don't wait too long to call "JAP JAP!" - your opponent might beat you to it!
-- **Be careful when calling "JAP JAP!"** - if an opponent has a lower score, they'll win instead (counter-win rule)
+- **Be careful when calling "JAP JAP!"** - if an opponent has a strictly lower score, they'll win instead (counter-win rule)
 - Sometimes it's worth picking up a high card from the discard pile if it helps you form a valid play
 
 ### AI Opponent Strategy
