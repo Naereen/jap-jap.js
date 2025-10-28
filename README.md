@@ -1,9 +1,14 @@
 # Jap Jap! 🃏
 
+<p align="center">
+  <img src="img/icon-512x512.png" alt="Jap Jap Game Icon" width="200" height="200">
+</p>
+
 A browser-based card game implementation of "Jap Jap" (also known as "Knock" or "Thirty-One" in some regions), built with JavaScript and the cards.js library.
 
 [![Play Now](https://img.shields.io/badge/Play-Now-brightgreen)](https://naereen.github.io/jap-jap.js/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![PWA Ready](https://img.shields.io/badge/PWA-Ready-orange)](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps)
 
 ## Screenshots
 
@@ -101,15 +106,48 @@ Visit [https://naereen.github.io/jap-jap.js/](https://naereen.github.io/jap-jap.
    start index.html  # Windows
    ```
 
+### Install as PWA on Android 📱
+
+**Jap Jap!** is a Progressive Web App (PWA) that can be installed on your Android device for an app-like experience with offline functionality!
+
+#### Installation Steps:
+
+1. **Open the game in Chrome on Android:**
+   - English version: [https://naereen.github.io/jap-jap.js/](https://naereen.github.io/jap-jap.js/)
+   - French version: [https://naereen.github.io/jap-jap.js/index.fr.html](https://naereen.github.io/jap-jap.js/index.fr.html)
+
+2. **Install the PWA:**
+   - Tap the **menu icon** (three dots) in the top-right corner
+   - Select **"Add to Home screen"** or **"Install app"**
+   - Confirm the installation by tapping **"Install"** or **"Add"**
+
+3. **Launch the app:**
+   - Find the **Jap Jap!** icon on your home screen
+   - Tap it to launch the game as a standalone app
+   - The game will work even when you're offline! 🎉
+
+#### PWA Features:
+
+- **Offline Support**: Play the game without an internet connection thanks to the service worker
+- **Home Screen Icon**: Quick access from your device's home screen
+- **Standalone Mode**: Runs like a native app without browser UI
+- **Fast Loading**: Cached resources load instantly
+- **Auto-Updates**: The app automatically updates when changes are available
+
+> **Note**: PWA installation is supported on most modern Android browsers (Chrome, Edge, Samsung Internet). On iOS, you can use "Add to Home Screen" in Safari for a similar experience, though offline functionality may be limited.
+
 ## 📁 Project Structure
 
 - `index.html` - Main game page (English version)
 - `index.fr.html` - French version of the game
+- `sw.js` - Service worker for offline PWA functionality
+- `manifest.json` - PWA manifest file for app metadata and icons
 - `japjap.js` - Game logic and AI implementation
 - `cards.js` - Card manipulation library by Einar Egilsson
 - `example.css` - Game styling
 - `jquery-1.7.min.js` - jQuery library for DOM manipulation
 - `img/cards.png` - Card deck sprite sheet
+- `img/icon-*.png` - App icons in various sizes (72x72 to 512x512)
 
 ## 🛠️ Technologies Used
 
