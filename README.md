@@ -30,6 +30,7 @@ A browser-based card game implementation of "Jap Jap" (also known as "Knock" or 
      - The deck (hidden card)
      - The discard pile (visible top card)
 4. **Winning a Round**: When your hand value is 5 or less, click "JAP JAP!" to win the round
+   - **Counter-Win Rule**: If you call "JAP JAP!" but an opponent has a hand with strictly fewer points, that opponent wins instead!
 5. **Scoring**: The losing player of each round gains points equal to their hand value
 6. **Game Over**: First player to reach 90 points loses the game
 
@@ -38,6 +39,7 @@ A browser-based card game implementation of "Jap Jap" (also known as "Knock" or 
 - Try to form sequences or pairs early to discard high-value cards
 - Watch the discard pile for cards that might help you complete a sequence
 - Don't wait too long to call "JAP JAP!" - your opponent might beat you to it!
+- **Be careful when calling "JAP JAP!"** - if an opponent has a strictly lower score, they'll win instead (counter-win rule)
 - Sometimes it's worth picking up a high card from the discard pile if it helps you form a valid play
 
 ### AI Opponent Strategy
