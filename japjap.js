@@ -97,6 +97,31 @@ function reshuffleDiscardPile() {
     }
 }
 
+// Function to reshuffle discard pile while preserving a specific card on top
+function reshuffleDiscardPileKeepingCard(savedCard) {
+    if (savedCard && discardPile.length > 1) {
+        var cardsToReshuffle = [];
+        // Remove all cards from discard pile
+        while (discardPile.length > 0) {
+            var c = discardPile.topCard();
+            discardPile.splice(discardPile.length - 1, 1);
+            if (c !== savedCard) {
+                cardsToReshuffle.push(c);
+            }
+        }
+        // Shuffle and add to deck
+        cards.shuffle(cardsToReshuffle);
+        deck.addCards(cardsToReshuffle);
+        // Put the saved card back on top of discard pile
+        discardPile.addCard(savedCard);
+        deck.render({ immediate: true });
+        discardPile.render({ immediate: true });
+        console.log("Reshuffled " + cardsToReshuffle.length + " cards from discard pile to deck, kept " + savedCard.toString() + " on top");
+    } else {
+        reshuffleDiscardPile();
+    }
+}
+
 // Wait for some time
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -354,28 +379,7 @@ async function playOpponentTurn(opponentIndex) {
     } else {
         // Pick from deck
         if (deck.length === 0) {
-            // Reshuffle discard pile, keeping the saved top card on top
-            if (savedDiscardTop && discardPile.length > 1) {
-                var cardsToReshuffle = [];
-                // Remove all cards from discard pile
-                while (discardPile.length > 0) {
-                    var c = discardPile.topCard();
-                    discardPile.splice(discardPile.length - 1, 1);
-                    if (c !== savedDiscardTop) {
-                        cardsToReshuffle.push(c);
-                    }
-                }
-                // Shuffle and add to deck
-                cards.shuffle(cardsToReshuffle);
-                deck.addCards(cardsToReshuffle);
-                // Put the saved card back on top of discard pile
-                discardPile.addCard(savedDiscardTop);
-                deck.render({ immediate: true });
-                discardPile.render({ immediate: true });
-                console.log("Reshuffled " + cardsToReshuffle.length + " cards from discard pile to deck, kept " + savedDiscardTop.toString() + " on top");
-            } else {
-                reshuffleDiscardPile();
-            }
+            reshuffleDiscardPileKeepingCard(savedDiscardTop);
         }
         if (deck.length > 0) {
             opponentHand.addCard(deck.topCard());
@@ -709,28 +713,7 @@ deck.click(function (card) {
         
         // Pick from deck
         if (deck.length === 0) {
-            // Reshuffle discard pile, keeping the saved top card on top
-            if (savedDiscardTop && discardPile.length > 1) {
-                var cardsToReshuffle = [];
-                // Remove all cards from discard pile
-                while (discardPile.length > 0) {
-                    var c = discardPile.topCard();
-                    discardPile.splice(discardPile.length - 1, 1);
-                    if (c !== savedDiscardTop) {
-                        cardsToReshuffle.push(c);
-                    }
-                }
-                // Shuffle and add to deck
-                cards.shuffle(cardsToReshuffle);
-                deck.addCards(cardsToReshuffle);
-                // Put the saved card back on top of discard pile
-                discardPile.addCard(savedDiscardTop);
-                deck.render({ immediate: true });
-                discardPile.render({ immediate: true });
-                console.log("Reshuffled " + cardsToReshuffle.length + " cards from discard pile to deck, kept " + savedDiscardTop.toString() + " on top");
-            } else {
-                reshuffleDiscardPile();
-            }
+            reshuffleDiscardPileKeepingCard(savedDiscardTop);
         }
         if (deck.length > 0) {
             lowerHand.addCard(deck.topCard());
