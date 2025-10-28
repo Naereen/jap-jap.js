@@ -348,9 +348,14 @@ async function playOpponentTurn(opponentIndex) {
     
     // Decide whether to pick from discard or deck BEFORE playing cards
     var pickFromDiscard = false;
+    var cardToPickFromDiscard = null;
     if (discardPile.length > 0) {
         var topCard = discardPile.topCard();
         pickFromDiscard = shouldPickFromDiscard(opponentHand, topCard);
+        // Save the card to pick from discard BEFORE discarding
+        if (pickFromDiscard) {
+            cardToPickFromDiscard = topCard;
+        }
     }
     
     // If opponent will pick from deck and deck is empty, save the current discard top
@@ -371,11 +376,11 @@ async function playOpponentTurn(opponentIndex) {
     discardPile.render();
     await sleep(defaultSleepBetweenOperations);
     
-    if (pickFromDiscard && discardPile.length > 0) {
-        // Pick from discard pile
-        var cardFromDiscard = discardPile.topCard();
-        opponentHand.addCard(cardFromDiscard);
-        console.log("Opponent " + (opponentIndex + 1) + " picks from discard: " + cardFromDiscard.toString());
+    if (pickFromDiscard && cardToPickFromDiscard && discardPile.length > 0) {
+        // Pick from discard pile (the card we saved before discarding)
+        // Note: addCard automatically removes the card from its previous container (discardPile)
+        opponentHand.addCard(cardToPickFromDiscard);
+        console.log("Opponent " + (opponentIndex + 1) + " picks from discard: " + cardToPickFromDiscard.toString());
     } else {
         // Pick from deck
         if (deck.length === 0) {
