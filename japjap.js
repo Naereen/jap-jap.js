@@ -376,8 +376,9 @@ async function playOpponentTurn(opponentIndex) {
     discardPile.render();
     await sleep(defaultSleepBetweenOperations);
     
-    if (pickFromDiscard && cardToPickFromDiscard) {
+    if (pickFromDiscard && cardToPickFromDiscard && discardPile.length > 0) {
         // Pick from discard pile (the card we saved before discarding)
+        // Note: addCard automatically removes the card from its previous container (discardPile)
         opponentHand.addCard(cardToPickFromDiscard);
         console.log("Opponent " + (opponentIndex + 1) + " picks from discard: " + cardToPickFromDiscard.toString());
     } else {
