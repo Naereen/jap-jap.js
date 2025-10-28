@@ -316,7 +316,7 @@ async function playOpponentTurn(opponentIndex) {
         opponentHand.render();
         await sleep(opponentHandRevealDuration); // Pause to show the hand
         updateStatus("Opponent " + (opponentIndex + 1) + " calls JAP JAP! Score: " + opponentScore);
-        await endRound(false, opponentIndex); // Opponent wins
+        await endRound(false, opponentIndex, opponentScore); // Opponent wins (or someone with lower score)
         return true; // Round ended
     }
     
@@ -397,28 +397,88 @@ async function playOpponentTurn(opponentIndex) {
 }
 
 // End the round and calculate scores
-async function endRound(playerWins, winningOpponentIndex) {
+async function endRound(playerWins, winningOpponentIndex, callerScore) {
     gameState.roundInProgress = false;
     
     var playerHandScore = scoreOfHand(lowerHand);
     
-    if (playerWins) {
-        // All opponents gain their hand value
+    // Check if any player has a strictly lower score than the caller
+    // If so, that player wins instead
+    var actualWinnerIsPlayer = playerWins;
+    var actualWinningOpponentIndex = winningOpponentIndex;
+    var lowestScore = callerScore;
+    
+    // Check player's score (only if player didn't call Jap-Jap)
+    if (!playerWins && playerHandScore < lowestScore) {
+        lowestScore = playerHandScore;
+        actualWinnerIsPlayer = true;
+        actualWinningOpponentIndex = -1;
+    }
+    
+    // Check all opponents' scores
+    for (var i = 0; i < gameState.numPlayers - 1; i++) {
+        var opponentHandScore = scoreOfHand(opponentHands[i]);
+        // Skip the opponent who called Jap-Jap
+        if (!playerWins && i === winningOpponentIndex) continue;
+        // Skip the player if they called Jap-Jap (handled above)
+        if (playerWins) {
+            // Check if this opponent has a strictly lower score
+            if (opponentHandScore < lowestScore) {
+                lowestScore = opponentHandScore;
+                actualWinnerIsPlayer = false;
+                actualWinningOpponentIndex = i;
+            }
+        } else {
+            // Another opponent might have a lower score than the calling opponent
+            if (opponentHandScore < lowestScore) {
+                lowestScore = opponentHandScore;
+                actualWinnerIsPlayer = false;
+                actualWinningOpponentIndex = i;
+            }
+        }
+    }
+    
+    // Display message if winner changed
+    if (playerWins && !actualWinnerIsPlayer) {
+        // Player called Jap-Jap but an opponent has a lower score
+        var opponentHand = opponentHands[actualWinningOpponentIndex];
+        opponentHand.faceUp = true;
+        opponentHand.render();
+        await sleep(opponentHandRevealDuration);
+        updateStatus("Counter! Opponent " + (actualWinningOpponentIndex + 1) + " has a lower score (" + lowestScore + ") and wins instead!");
+    } else if (!playerWins && actualWinnerIsPlayer) {
+        // Opponent called Jap-Jap but player has a lower score
+        updateStatus("Counter! You have a lower score (" + lowestScore + ") and win instead!");
+    } else if (!playerWins && actualWinningOpponentIndex !== winningOpponentIndex) {
+        // Opponent called Jap-Jap but another opponent has a lower score
+        var opponentHand = opponentHands[actualWinningOpponentIndex];
+        opponentHand.faceUp = true;
+        opponentHand.render();
+        await sleep(opponentHandRevealDuration);
+        updateStatus("Counter! Opponent " + (actualWinningOpponentIndex + 1) + " has a lower score (" + lowestScore + ") and wins instead!");
+    }
+    
+    if (actualWinnerIsPlayer) {
+        // Player wins: all opponents gain their hand value
         for (var i = 0; i < gameState.numPlayers - 1; i++) {
             var opponentHandScore = scoreOfHand(opponentHands[i]);
             gameState.opponentScores[i] += opponentHandScore;
         }
-        updateStatus("You win this round!");
+        if (actualWinningOpponentIndex === -1 && playerWins) {
+            updateStatus("You win this round!");
+        } // else counter message already shown
     } else {
-        // Player and other opponents gain their hand values
+        // An opponent wins: player and other opponents gain their hand values
         gameState.playerScore += playerHandScore;
         for (var i = 0; i < gameState.numPlayers - 1; i++) {
-            if (i !== winningOpponentIndex) {
+            if (i !== actualWinningOpponentIndex) {
                 var opponentHandScore = scoreOfHand(opponentHands[i]);
                 gameState.opponentScores[i] += opponentHandScore;
             }
         }
-        updateStatus("Opponent " + (winningOpponentIndex + 1) + " wins!");
+        if (actualWinningOpponentIndex === winningOpponentIndex && !playerWins) {
+            updateStatus("Opponent " + (actualWinningOpponentIndex + 1) + " wins!");
+        } // else counter message already shown
     }
     
     updateScores();
@@ -826,7 +886,7 @@ $('#japjap-button').click(async function() {
     var playerScore = scoreOfHand(lowerHand);
     if (playerScore <= 5 && gameState.hasPlayedInRound) {
         updateStatus("You call JAP JAP! Score: " + playerScore);
-        await endRound(true, -1); // Player wins
+        await endRound(true, -1, playerScore); // Player wins (or someone with lower score)
     } else if (playerScore <= 5 && !gameState.hasPlayedInRound) {
         updateStatus("Cannot call Jap Jap yet! You must play at least one turn first.");
     } else {
