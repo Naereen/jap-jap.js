@@ -1,0 +1,22 @@
+{
+  "name": "Jap Jap! Card Game",
+  "short_name": "Jap Jap",
+  "description": "A browser-based card game where players aim to achieve the lowest hand value. Try to get 5 or less and call JAP JAP! to win!",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#1a472a",
+  "theme_color": "#2d5f3f",
+  "orientation": "landscape",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    {
+      "src": "img/cards.png",
+      "sizes": "968x672",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "lang": "en",
+  "dir": "ltr",
+  "scope": "./"
+}
