@@ -407,12 +407,38 @@ async function endRound(playerWins, winningOpponentIndex) {
     // Check if game is over (someone reached 90 points)
     var gameOver = false;
     if (gameState.playerScore >= 90) {
-        updateStatus("GAME OVER! You lose the game!");
+        // Player reached 90, find who has the lowest score among opponents
+        var lowestScore = Infinity;
+        var winnerIndex = -1;
+        for (var i = 0; i < gameState.numPlayers - 1; i++) {
+            if (gameState.opponentScores[i] < lowestScore) {
+                lowestScore = gameState.opponentScores[i];
+                winnerIndex = i;
+            }
+        }
+        updateStatus("GAME OVER! You lose the game! Opponent " + (winnerIndex + 1) + " wins with " + lowestScore + " points!");
         gameOver = true;
     } else {
         for (var i = 0; i < gameState.numPlayers - 1; i++) {
             if (gameState.opponentScores[i] >= 90) {
-                updateStatus("GAME OVER! Opponent " + (i + 1) + " loses, you win!");
+                // Opponent reached 90, find who has the lowest score (player or other opponents)
+                var lowestScore = gameState.playerScore;
+                var winnerIsPlayer = true;
+                var winnerIndex = -1;
+                
+                for (var j = 0; j < gameState.numPlayers - 1; j++) {
+                    if (j !== i && gameState.opponentScores[j] < lowestScore) {
+                        lowestScore = gameState.opponentScores[j];
+                        winnerIsPlayer = false;
+                        winnerIndex = j;
+                    }
+                }
+                
+                if (winnerIsPlayer) {
+                    updateStatus("GAME OVER! Opponent " + (i + 1) + " loses, you win with " + lowestScore + " points!");
+                } else {
+                    updateStatus("GAME OVER! Opponent " + (i + 1) + " loses, Opponent " + (winnerIndex + 1) + " wins with " + lowestScore + " points!");
+                }
                 gameOver = true;
                 break;
             }
