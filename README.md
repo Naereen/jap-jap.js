@@ -6,6 +6,8 @@
 
 A browser-based card game implementation of "Jap Jap" (also known as "Knock" or "Thirty-One" in some regions), built with JavaScript and the cards.js library.
 
+> Almost fully made by « vibe coding » with Google's Gemini and GitHub's Copilot AI tools!
+
 [![Play Now](https://img.shields.io/badge/Play-Now-brightgreen)](https://naereen.github.io/jap-jap.js/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![PWA Ready](https://img.shields.io/badge/PWA-Ready-orange)](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps)
@@ -179,7 +181,7 @@ This project was developed with assistance from GitHub Copilot.
 
 ## 📄 License
 
-Copyright (c) 2024 Lilian Besson (Naereen)
+Copyright (c) 2019-2025 Lilian Besson (Naereen)
 
 This game implementation is free and open source software distributed under the MIT License. You are free to use, modify, and distribute it.
 
@@ -207,4 +209,4 @@ Give a ⭐️ if you enjoy this game!
 
 ---
 
-*Made with ❤️ by [Lilian Besson](https://github.com/Naereen)*
+*Made with ❤️ by [Lilian Besson] (@Naereen)(https://github.com/Naereen) and help from Google's Gemini and GitHub's Copilot.*
